@@ -12,16 +12,10 @@ root.title('Калькулятор')
 root.geometry('450x400')
 root.resizable(False, False)
 
-# ============================================================
-# ГЕНЕРАЦИЯ ТЕМНОГО ФОНА С ГРАДИЕНТОМ И СЕТКОЙ
-# ============================================================
 def create_dark_grid_background(width, height):
-    """Создает темный фон с градиентом и биржевой сеткой"""
-    
     img = Image.new('RGB', (width, height), color='#0A0C12')
     draw = ImageDraw.Draw(img)
     
-    # Градиент
     for y in range(height):
         ratio = y / height
         r = int(8 + ratio * 5)
@@ -29,15 +23,12 @@ def create_dark_grid_background(width, height):
         b = int(18 + ratio * 10)
         draw.line([(0, y), (width, y)], fill=(r, g, b))
     
-    # Горизонтальные линии сетки
     for y in range(20, height, 25):
         draw.line([(0, y), (width, y)], fill=(0, 150, 200))
     
-    # Вертикальные линии сетки
     for x in range(20, width, 30):
         draw.line([(x, 0), (x, height)], fill=(0, 120, 180))
     
-    # Светящиеся точки
     for _ in range(100):
         x = random.randint(0, width)
         y = random.randint(0, height)
@@ -46,25 +37,20 @@ def create_dark_grid_background(width, height):
     
     return img
 
-# Создаем фон
 bg_image_pil = create_dark_grid_background(450, 400)
 bg_photo = ImageTk.PhotoImage(bg_image_pil)
 
-# Создаем Canvas для фона
 canvas = Canvas(root, width=450, height=400, highlightthickness=0)
 canvas.pack(fill="both", expand=True)
 
-# Размещаем фон
 canvas.create_image(0, 0, image=bg_photo, anchor="nw")
-canvas.image = bg_photo  # сохраняем ссылку
+canvas.image = bg_photo
 
-# Создаем основной фрейм (будет поверх canvas)
 main_frame = Frame(root, bg='#0F1117', bd=2, relief=SOLID)
 main_frame.place(x=20, y=20, width=410, height=360)
 
-# ============================================================
-# ОСНОВНОЙ ИНТЕРФЕЙС
-# ============================================================
+
+
 
 var_T = DoubleVar(value=10)
 var_k = DoubleVar(value=3)
@@ -261,12 +247,10 @@ def draw_button(state='normal'):
     else:
         color = '#2A6F8F'
     
-    # Рисуем закругленный прямоугольник
     btn_canvas.create_rounded_rect(5, 5, 175, 35, radius=15, fill=color, outline='', tags="button_bg")
     btn_canvas.create_text(90, 20, text="Рассчитать", font=('Arial', 12, 'bold'), 
                            fill='white', tags="button_text")
 
-# Функция для закругленных прямоугольников
 def create_rounded_rect(canvas, x1, y1, x2, y2, radius=25, **kwargs):
     points = [x1+radius, y1,
               x2-radius, y1,
@@ -282,13 +266,11 @@ def create_rounded_rect(canvas, x1, y1, x2, y2, radius=25, **kwargs):
               x1, y1]
     return canvas.create_polygon(points, smooth=True, **kwargs)
 
-# Добавляем метод create_rounded_rect в Canvas
 Canvas.create_rounded_rect = create_rounded_rect
 
-# Рисуем начальное состояние кнопки
 draw_button()
 
-# Эффекты наведения и нажатия
+# эффекты кнопки
 def on_enter(e):
     draw_button('hover')
 
@@ -298,14 +280,12 @@ def on_leave(e):
 def on_click(e):
     draw_button('pressed')
     on_calc()
-    draw_button('normal')  # возвращаем после расчета
+    draw_button('normal')
 
-# Привязываем события
 btn_canvas.bind("<Enter>", on_enter)
 btn_canvas.bind("<Leave>", on_leave)
 btn_canvas.bind("<Button-1>", on_click)
 
-# Меняем курсор при наведении
 btn_canvas.config(cursor="hand2")
 
 # ToolTips
