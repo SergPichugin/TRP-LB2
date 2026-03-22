@@ -70,7 +70,7 @@ def calc(T, t, k, Pr, E):
     p = (math.exp((Pr*tn))- d)/(u-d)
     q = 1 - p
     
-    r = np.zeros((n+1, n+1)) # процентная ставка
+    r = np.zeros((n+1, n+1)) # безрисковая процентная ставка
     r[n][0] = Pr*100
 
     j = 1
@@ -119,6 +119,25 @@ def calc(T, t, k, Pr, E):
     
     lbl6.config(text=f"Форвард: {(ZCB10[10][0]/ZCBt[t][0])*100:.2f}%")
     
+    # ZCBt
+    ZCBt = np.zeros((t+1, t+1))
+    for i in range(0, t+1):
+        ZCBt[i][t] = 100
+    
+    rows = r.shape[0]
+    rС = r[rows-(t+1):rows, 0:(t+1)].copy()
+
+    g = 1
+    for j in range(t-1, -1, -1): 
+        for i in range(g, t+1):
+            ZCBt[i][j] = (p * (ZCBt[i-1][j+1])/100 + q * (ZCBt[i][j+1])/100) / (1 + (rС[i][j])/100)
+            ZCBt[i][j] = ZCBt[i][j]*100
+        if j > 0: 
+            g = g + 1
+    
+    lblZCBt.config(text=f"Цена ZCB₁₀ в момент t={t}: {ZCBt[t][0]:.2f}%")
+    
+
     rows = ZCB10.shape[0]
     ZCB10C = ZCB10[rows-(k+1):rows, 0:(k+1)].copy()
     futV = ZCB10C
@@ -159,7 +178,7 @@ entry_style = {'font': ('Arial', 12), 'bg': '#1A1E2A', 'fg': '#00FFC6',
 
 title_label = Label(main_frame, text="Калькулятор", font=('Arial', 18, 'bold'), 
                     bg='#0F1117', fg='#00FFC6')
-title_label.pack(pady=(10, 5))
+title_label.pack(pady=(0, 5))
 
 separator = Frame(main_frame, height=2, bg='#2A6F8F')
 separator.pack(fill='x', padx=20, pady=(0, 10))
@@ -217,6 +236,9 @@ results_frame.pack(pady=5)
 
 result_style = {'font': ('Arial', 14, 'bold'), 'bg': '#0F1117', 'fg': '#E4E6F0'}
 
+lblZCBt = Label(results_frame, text="Цена ZCB₁₀ в момент t: --.-%", **result_style)
+lblZCBt.pack(anchor='w', pady=3)
+
 lblPrice = Label(results_frame, text="Цена ZCB₁₀: --.-%", **result_style)
 lblPrice.pack(anchor='w', pady=3)
 
@@ -235,8 +257,8 @@ def on_calc():
          float(edtk.get()), float(edtPr.get()), 
          float(edtE.get()))
 
-btn_canvas = Canvas(main_frame, width=180, height=40, bg='#0F1117', highlightthickness=0)
-btn_canvas.pack(pady=(10, 15))
+btn_canvas = Canvas(main_frame, width=150, height=40, bg='#0F1117', highlightthickness=0)
+btn_canvas.pack(pady=(0, 15))
 
 def draw_button(state='normal'):
     btn_canvas.delete("button_bg")
@@ -246,9 +268,9 @@ def draw_button(state='normal'):
         color = '#3A8FBF'
     else:
         color = '#2A6F8F'
-    
-    btn_canvas.create_rounded_rect(5, 5, 175, 35, radius=15, fill=color, outline='', tags="button_bg")
-    btn_canvas.create_text(90, 20, text="Рассчитать", font=('Arial', 12, 'bold'), 
+
+    btn_canvas.create_rounded_rect(20, 5, 125, 75, radius=12, fill=color, outline='', tags="button_bg")
+    btn_canvas.create_text(75, 20, text="Рассчитать", font=('Arial', 12, 'bold'), 
                            fill='white', tags="button_text")
 
 def create_rounded_rect(canvas, x1, y1, x2, y2, radius=25, **kwargs):
@@ -279,8 +301,11 @@ def on_leave(e):
 
 def on_click(e):
     draw_button('pressed')
+    root.after(50, execute_calc)
+    root.after(100, lambda: draw_button('normal'))
+
+def execute_calc():
     on_calc()
-    draw_button('normal')
 
 btn_canvas.bind("<Enter>", on_enter)
 btn_canvas.bind("<Leave>", on_leave)
