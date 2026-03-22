@@ -70,7 +70,7 @@ def calc(T, t, k, Pr, E):
     p = (math.exp((Pr*tn))- d)/(u-d)
     q = 1 - p
     
-    r = np.zeros((n+1, n+1)) # безрисковая процентная ставка
+    r = np.zeros((n+1, n+1)) # процентная ставка
     r[n][0] = Pr*100
 
     j = 1
