@@ -70,18 +70,18 @@ def calc(T, t, k, Pr, E):
     p = (math.exp((Pr*tn))- d)/(u-d)
     q = 1 - p
     
-    prStavka = np.zeros((n+1, n+1))
-    prStavka[n][0] = Pr*100
+    r = np.zeros((n+1, n+1)) # безрисковая процентная ставка
+    r[n][0] = Pr*100
 
     j = 1
     for i in range(n-1, -1, -1):
-        prStavka[i][j] = prStavka[i+1][j-1] * u 
+        r[i][j] = r[i+1][j-1] * u 
         j = j + 1
 
     for i in range(n, -1, -1):  
         for j in range(1, n+1):  
-            if prStavka[i][j] == 0:  
-                prStavka[i][j] = prStavka[i][j-1] * d
+            if r[i][j] == 0:  
+                r[i][j] = r[i][j-1] * d
     
     # ZCB10
     ZCB10 = np.zeros((n+1, n+1))
@@ -91,7 +91,7 @@ def calc(T, t, k, Pr, E):
     g = 1
     for j in range(n-1, -1, -1): 
         for i in range(g, n+1):
-            ZCB10[i][j] = (p * (ZCB10[i-1][j+1])/100 + q * (ZCB10[i][j+1])/100) / (1 + (prStavka[i][j])/100)
+            ZCB10[i][j] = (p * (ZCB10[i-1][j+1])/100 + q * (ZCB10[i][j+1])/100) / (1 + (r[i][j])/100)
             ZCB10[i][j] = ZCB10[i][j]*100
         if j > 0: 
             g = g + 1
@@ -106,13 +106,13 @@ def calc(T, t, k, Pr, E):
     for i in range(0, t+1):
         ZCBt[i][t] = 100
     
-    rows = prStavka.shape[0]
-    prStavkaС = prStavka[rows-(t+1):rows, 0:(t+1)].copy()
+    rows = r.shape[0]
+    rС = r[rows-(t+1):rows, 0:(t+1)].copy()
 
     g = 1
     for j in range(t-1, -1, -1): 
         for i in range(g, t+1):
-            ZCBt[i][j] = (p * (ZCBt[i-1][j+1])/100 + q * (ZCBt[i][j+1])/100) / (1 + (prStavkaС[i][j])/100)
+            ZCBt[i][j] = (p * (ZCBt[i-1][j+1])/100 + q * (ZCBt[i][j+1])/100) / (1 + (rС[i][j])/100)
             ZCBt[i][j] = ZCBt[i][j]*100
         if j > 0: 
             g = g + 1
